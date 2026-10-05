@@ -1,0 +1,227 @@
+[
+  {
+    "id": "CLEARTEXT-TELNET",
+    "title": "Telnet service exposed",
+    "severity": "critical",
+    "ports": [23],
+    "description": "Telnet transmits the entire session, including credentials, without encryption. Any host on the path can capture or modify it.",
+    "remediation": "Disable the Telnet service and replace it with SSH. If legacy equipment requires Telnet, restrict it to a dedicated management VLAN behind a jump host.",
+    "references": ["https://www.cisa.gov/news-events/alerts/2014/04/08/telnet-deprecated"]
+  },
+  {
+    "id": "CLEARTEXT-FTP",
+    "title": "FTP service exposed",
+    "severity": "high",
+    "ports": [21],
+    "description": "FTP sends credentials and file contents in cleartext and is frequently misconfigured to allow anonymous access.",
+    "remediation": "Replace FTP with SFTP or FTPS. If FTP must remain, enforce TLS and restrict source addresses.",
+    "references": []
+  },
+  {
+    "id": "CLEARTEXT-POP3-IMAP",
+    "title": "Cleartext mail retrieval protocol exposed",
+    "severity": "medium",
+    "ports": [110, 143],
+    "description": "POP3 and IMAP without TLS expose mailbox credentials to network interception.",
+    "remediation": "Disable the cleartext listeners and require POP3S (995) / IMAPS (993) with modern TLS only.",
+    "references": []
+  },
+  {
+    "id": "CLEARTEXT-RSH",
+    "title": "rsh/rlogin/rexec service exposed",
+    "severity": "critical",
+    "ports": [512, 513, 514],
+    "description": "The legacy r-services authenticate using trusted-host files and send credentials in cleartext. They are trivially abused for lateral movement.",
+    "remediation": "Disable rsh, rlogin and rexec entirely; use SSH with key-based authentication.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-TFTP",
+    "title": "TFTP service exposed",
+    "severity": "high",
+    "ports": [69],
+    "description": "TFTP has no authentication and is commonly used to pull device configurations, including credentials.",
+    "remediation": "Disable TFTP unless a device strictly requires it, and then restrict access to the management network only.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-DATABASE-MYSQL",
+    "title": "MySQL/MariaDB reachable from the network",
+    "severity": "high",
+    "ports": [3306],
+    "description": "A database port is reachable over the network. Database services should not normally be exposed beyond the application tier.",
+    "remediation": "Bind the database to localhost or the application subnet and enforce firewall rules. Require strong per-application credentials and audit accounts for weak or shared passwords.",
+    "references": ["https://owasp.org/www-project-top-ten/"]
+  },
+  {
+    "id": "EXPOSED-DATABASE-POSTGRES",
+    "title": "PostgreSQL reachable from the network",
+    "severity": "high",
+    "ports": [5432],
+    "description": "A PostgreSQL port is reachable over the network. Database services should not normally be exposed beyond the application tier.",
+    "remediation": "Restrict listen_addresses and pg_hba.conf to application hosts, place the service behind a firewall and enforce scram-sha-256 authentication.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-DATABASE-MSSQL",
+    "title": "Microsoft SQL Server reachable from the network",
+    "severity": "high",
+    "ports": [1433, 1434],
+    "description": "A SQL Server port is reachable over the network, exposing the authentication surface and the UDP browser service that enumerates instances.",
+    "remediation": "Disable the SQL Browser service, restrict the TCP endpoint to the application subnet and disable the built-in sa account.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-REDIS",
+    "title": "Redis reachable from the network",
+    "severity": "critical",
+    "ports": [6379],
+    "description": "Redis ships without authentication by default. A reachable instance commonly allows arbitrary command execution via configuration rewrite.",
+    "remediation": "Bind Redis to localhost or a private interface, enable requirepass with a strong secret, enable protected-mode and run the process as an unprivileged user.",
+    "references": ["https://redis.io/docs/management/security/"]
+  },
+  {
+    "id": "EXPOSED-MONGODB",
+    "title": "MongoDB reachable from the network",
+    "severity": "critical",
+    "ports": [27017, 27018],
+    "description": "Older MongoDB deployments default to no authentication. Internet-reachable instances are routinely copied wholesale by automated crawlers.",
+    "remediation": "Enable authentication and role-based access control, bind to a private interface and restrict access with firewall rules.",
+    "references": ["https://www.mongodb.com/docs/manual/security/"]
+  },
+  {
+    "id": "EXPOSED-ELASTICSEARCH",
+    "title": "Elasticsearch reachable from the network",
+    "severity": "critical",
+    "ports": [9200, 9300],
+    "description": "Elasticsearch historically shipped without authentication. A reachable cluster exposes all indexed data and often supports scripting-based command execution.",
+    "remediation": "Enable security features, require authentication and TLS, and never expose the transport or HTTP port to untrusted networks.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-MEMCACHED",
+    "title": "Memcached reachable from the network",
+    "severity": "critical",
+    "ports": [11211],
+    "description": "Memcached has no authentication and has been widely abused for reflection-amplification DDoS and cache data disclosure.",
+    "remediation": "Bind Memcached to localhost or a private interface, disable UDP and enforce firewall rules.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-CASSANDRA",
+    "title": "Cassandra reachable from the network",
+    "severity": "high",
+    "ports": [9042, 9160],
+    "description": "A Cassandra native transport or Thrift port is reachable, exposing the cluster and its data to unauthenticated or weakly authenticated access.",
+    "remediation": "Restrict cluster ports to cluster nodes and application hosts, and enable the Cassandra authenticator and authorizer.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-COUCHDB",
+    "title": "CouchDB reachable from the network",
+    "severity": "high",
+    "ports": [5984],
+    "description": "CouchDB administrative endpoints allow database creation and query execution. Exposed instances expose all resident data.",
+    "remediation": "Bind to a private interface, require authentication and disable the admin party configuration.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-SMB",
+    "title": "SMB file sharing exposed",
+    "severity": "high",
+    "ports": [139, 445],
+    "description": "SMB is reachable from an untrusted network. Historically this has exposed the service to wormable remote code execution and to relay attacks when signing is not enforced.",
+    "remediation": "Block SMB at the network perimeter, require SMB signing, disable SMBv1 and remove anonymous share access.",
+    "references": ["https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-security"]
+  },
+  {
+    "id": "EXPOSED-NETBIOS",
+    "title": "NetBIOS name service exposed",
+    "severity": "medium",
+    "ports": [137, 138],
+    "description": "NetBIOS name and datagram services leak host and domain information and enable spoofing attacks.",
+    "remediation": "Disable NetBIOS over TCP/IP where it is not required and block the ports at the perimeter.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-RDP",
+    "title": "Remote Desktop Protocol exposed",
+    "severity": "high",
+    "ports": [3389],
+    "description": "RDP reachable from an untrusted network is a primary initial-access vector for ransomware operators, through both credential attacks and pre-auth vulnerabilities.",
+    "remediation": "Place RDP behind a VPN or a zero-trust gateway, enable Network Level Authentication, enforce account lockout and MFA, and restrict source addresses.",
+    "references": ["https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-061a"]
+  },
+  {
+    "id": "EXPOSED-VNC",
+    "title": "VNC service exposed",
+    "severity": "high",
+    "ports": [5900, 5901, 5902],
+    "description": "VNC is reachable from the network and frequently protected only by a short, brute-forceable password.",
+    "remediation": "Tunnel VNC over SSH or a VPN, require a strong password and bind the listener to localhost.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-WINRM",
+    "title": "WinRM management endpoint exposed",
+    "severity": "medium",
+    "ports": [5985, 5986],
+    "description": "WinRM provides remote command execution and should not be reachable from untrusted networks.",
+    "remediation": "Restrict WinRM to management hosts, prefer HTTPS (5986) and require strong authentication.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-DOCKER-API",
+    "title": "Docker daemon API exposed",
+    "severity": "critical",
+    "ports": [2375, 2376],
+    "description": "An unauthenticated Docker API grants effective root on the host: containers can be created that mount the host filesystem.",
+    "remediation": "Never expose the Docker socket or TCP API. Use TLS client certificates if remote access is unavoidable, and restrict access with firewall rules.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-KUBERNETES-API",
+    "title": "Kubernetes API server exposed",
+    "severity": "high",
+    "ports": [6443, 8443],
+    "description": "A Kubernetes API endpoint is reachable from an untrusted network. Misconfigured anonymous authentication or weak RBAC turns this into full cluster compromise.",
+    "remediation": "Restrict API server access to trusted networks, disable anonymous authentication and audit RBAC bindings for cluster-admin grants.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-KIBANA",
+    "title": "Kibana reachable from the network",
+    "severity": "high",
+    "ports": [5601],
+    "description": "Kibana exposes indexed log and application data and has a history of unauth access when placed directly on the internet.",
+    "remediation": "Place Kibana behind authentication and a reverse proxy, and restrict source networks.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-SOLR",
+    "title": "Apache Solr reachable from the network",
+    "severity": "critical",
+    "ports": [8983],
+    "description": "Solr's admin interface allows configuration changes that have repeatedly led to remote code execution when exposed.",
+    "remediation": "Restrict the admin interface to trusted hosts and enable authentication on the Solr instance.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-ZOOKEEPER",
+    "title": "ZooKeeper reachable from the network",
+    "severity": "high",
+    "ports": [2181],
+    "description": "ZooKeeper has no authentication by default and arbitrary clients can read or modify coordination data.",
+    "remediation": "Restrict ZooKeeper to cluster members and enable SASL authentication with ACLs.",
+    "references": []
+  },
+  {
+    "id": "EXPOSED-RSYNC",
+    "title": "rsync daemon exposed",
+    "severity": "high",
+    "ports": [873],
+    "description": "An rsync daemon reachable from the network may publish modules read-write without authentication.",
+    "remediation": "Disable the rsync daemon in favour of rsync over SSH, or restrict hosts allow/deny and require module authentication.",
+    "references": []
+  }
+]

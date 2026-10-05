@@ -1,0 +1,44 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+tests/.tmp/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# --- Engagement data: never commit these -------------------------------------
+# reconkit has no legitimate reason to store scan output or client material in
+# the repository. If a path below ever shows up in `git status`, stop and ask
+# whether you have written authorisation to publish it.
+scans/
+engagements/
+loot/
+reports/
+*.nmap
+*.gnmap
+*.nessus
+*.burp

@@ -1,0 +1,6 @@
+{"url":"http://web01.lab.internal/","status_code":200,"title":"Lab Portal — internal documentation","webserver":"nginx/1.18.0","tech":["Nginx","PHP","Ubuntu"],"content_length":4821,"host":"web01.lab.internal","port":80,"scheme":"http"}
+{"url":"https://jenkins.lab.internal:8080/","status_code":200,"title":"Dashboard [Jenkins]","webserver":"Jetty 9.4.31","tech":["Jenkins","Java"],"content_length":12043,"host":"jenkins.lab.internal","port":8080,"scheme":"https"}
+{"url":"https://staging.lab.internal/","status_code":200,"title":"Staging - Lab Portal","webserver":"nginx","tech":["Nginx"],"content_length":3310,"host":"staging.lab.internal","port":443,"scheme":"https"}
+{"url":"https://files01.lab.internal/","status_code":404,"title":"","webserver":"nginx","tech":[],"content_length":153,"host":"files01.lab.internal","port":443,"scheme":"https"}
+{"url":"https://web01.lab.internal/.git/config","status_code":200,"title":"","webserver":"nginx","tech":[],"content_length":92,"host":"web01.lab.internal","port":443,"scheme":"https"}
+{"url":"https://grafana.lab.internal/","status_code":302,"title":"Grafana","webserver":"nginx","tech":["Grafana"],"content_length":0,"host":"grafana.lab.internal","port":443,"scheme":"https"}

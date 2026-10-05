@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<!--
+  Synthetic nmap output for the reconkit demo and test suite.
+  The network 10.0.0.0/24, the hostnames under lab.internal and every banner
+  below are invented. Never commit output from a real engagement.
+-->
+<nmaprun scanner="nmap" args="nmap -sV -sC -oX examples/sample_nmap.xml 10.0.0.0/24" start="1700000000" startstr="Tue Nov 14 22:13:20 2023" version="7.94" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="1000" services="1-1000"/>
+<verbose level="0"/>
+<debugging level="0"/>
+
+<host starttime="1700000001" endtime="1700000021">
+  <status state="up" reason="echo-reply" reason_ttl="64"/>
+  <address addr="10.0.0.10" addrtype="ipv4"/>
+  <hostnames>
+    <hostname name="web01.lab.internal" type="PTR"/>
+  </hostnames>
+  <ports>
+    <port protocol="tcp" portid="22">
+      <state state="open" reason="syn-ack" reason_ttl="64"/>
+      <service name="ssh" product="OpenSSH" version="7.4" extrainfo="protocol 2.0" method="probed" conf="10"/>
+    </port>
+    <port protocol="tcp" portid="80">
+      <state state="open" reason="syn-ack" reason_ttl="64"/>
+      <service name="http" product="nginx" version="1.18.0" method="probed" conf="10"/>
+      <script id="http-title" output="Lab Portal — internal documentation"/>
+    </port>
+    <port protocol="tcp" portid="3306">
+      <state state="open" reason="syn-ack" reason_ttl="64"/>
+      <service name="mysql" product="MySQL" version="5.7.33" method="probed" conf="10"/>
+    </port>
+  </ports>
+</host>
+
+<host starttime="1700000002" endtime="1700000022">
+  <status state="up" reason="echo-reply" reason_ttl="64"/>
+  <address addr="10.0.0.20" addrtype="ipv4"/>
+  <hostnames>
+    <hostname name="files01.lab.internal" type="PTR"/>
+  </hostnames>
+  <ports>
+    <port protocol="tcp" portid="21">
+      <state state="open" reason="syn-ack" reason_ttl="64"/>
+      <service name="ftp" product="vsftpd" version="3.0.3" method="probed" conf="10"/>
+      <script id="ftp-anon" output="Anonymous FTP login allowed (FTP code 230)"/>
+    </port>
+    <port protocol="tcp" portid="445">
+      <state state="open" reason="syn-ack" reason_ttl="64"/>
+      <service name="microsoft-ds" method="probed" conf="10"/>
+      <script id="smb2-security-mode" output="|    Message signing enabled but not required"/>
+    </port>
+    <port protocol="tcp" portid="3389">
+      <state state="open" reason="syn-ack" reason_ttl="64"/>
+      <service name="ms-wbt-server" product="Microsoft Terminal Services" method="probed" conf="10"/>
+      <script id="rdp-ntlm-info" output="Target_Name: LAB&#xa;NetBIOS_Domain_Name: LAB&#xa;DNS_Computer_Name: files01.lab.internal"/>
+    </port>
+  </ports>
+</host>
+
+<host starttime="1700000003" endtime="1700000023">
+  <status state="up" reason="echo-reply" reason_ttl="64"/>
+  <address addr="10.0.0.30" addrtype="ipv4"/>
+  <ports>
+    <port protocol="tcp" portid="23">
+      <state state="open" reason="syn-ack" reason_ttl="64"/>
+      <service name="telnet" method="probed" conf="10"/>
+    </port>
+    <port protocol="tcp" portid="8080">
+      <state state="open" reason="syn-ack" reason_ttl="64"/>
+      <service name="http" product="Jetty" version="9.4.31.v20200723" method="probed" conf="10"/>
+      <script id="http-title" output="Dashboard [Jenkins]"/>
+    </port>
+  </ports>
+</host>
+
+<host starttime="1700000004" endtime="1700000024">
+  <status state="down" reason="no-response"/>
+  <address addr="10.0.0.40" addrtype="ipv4"/>
+</host>
+
+<runstats>
+  <finished time="1700000030" timestr="Tue Nov 14 22:13:50 2023" elapsed="30.12" summary="Nmap done at Tue Nov 14 22:13:50 2023; 256 IP addresses (3 hosts up) scanned in 30.12 seconds"/>
+  <hosts up="3" down="253" total="256"/>
+</runstats>
+</nmaprun>

@@ -1,0 +1,10 @@
+# Normalise line endings for a cross-platform project.
+# Files are stored with LF in the repository and checked out with LF everywhere,
+# so reports generated on Windows match reports generated on Linux byte for byte.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary

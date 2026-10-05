@@ -1,0 +1,54 @@
+﻿[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reconkit"
+version = "0.1.0"
+description = "Turn raw nmap and httpx scan output into a clean, client-ready penetration test report."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "micadzo", email = "lumierenovaxrono@gmail.com" }]
+keywords = ["pentest", "security", "nmap", "httpx", "reporting", "infosec", "offensive-security"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Security",
+]
+# reconkit intentionally has zero runtime dependencies: a security tool that
+# anyone can audit in one sitting is worth more than a convenient one.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[project.scripts]
+reconkit = "reconkit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/micadzo/reconkit"
+Issues = "https://github.com/micadzo/reconkit/issues"
+Changelog = "https://github.com/micadzo/reconkit/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+reconkit = ["templates/*.tmpl", "rules/*.json"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.coverage.run]
+source = ["reconkit"]
