@@ -45,8 +45,6 @@ python -m venv .venv
 pip install -e ".[dev]"
 
 python -m unittest discover -s tests -v
-ruff check src tests
-ruff format src tests
 ```
 
 There are no runtime dependencies, and pull requests that add one will be asked to justify it.
@@ -56,7 +54,7 @@ There are no runtime dependencies, and pull requests that add one will be asked 
 * One logical change per pull request.
 * New behaviour needs a test. Bug fixes should add the regression test first.
 * Update `CHANGELOG.md` under `## [Unreleased]`.
-* Run the full test suite and the linter before opening the pull request.
+* Run the full test suite before opening the pull request.
 
 ## Never
 

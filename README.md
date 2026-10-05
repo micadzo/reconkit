@@ -1,4 +1,4 @@
-﻿# reconkit
+# reconkit
 
 **Turn raw `nmap` and `httpx` output into a clean, client-ready penetration test report.**
 
@@ -189,7 +189,6 @@ reconkit/
 ```bash
 pip install -e ".[dev]"
 python -m unittest discover -s tests -v
-ruff check src tests
 ```
 
 55 tests cover the parsers, the check engine, both renderers and the CLI end to end.
