@@ -17,10 +17,11 @@ from .checks import (
     load_rules,
     manual_review_items,
     run_checks,
+    sort_findings,
 )
 from .models import Report, SEVERITIES
-from .parsers import parse_httpx_jsonl, parse_nmap_xml
-from .render import render_json, render_markdown
+from .parsers import parse_httpx_jsonl, parse_nmap_xml, parse_nuclei_jsonl
+from .render import render_docx, render_html, render_json, render_markdown
 
 PROGRAM = "reconkit"
 
@@ -33,7 +34,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog=PROGRAM,
         description=(
-            "Turn raw nmap and httpx output into a clean, client-ready penetration test report."
+            "Turn raw nmap, httpx and nuclei output into a clean, client-ready "
+            "penetration test report."
         ),
         epilog=(
             "Example: reconkit report --nmap scan.xml --httpx probe.jsonl "
@@ -58,6 +60,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="FILE",
         help="httpx JSONL (-jsonl) file; repeatable",
+    )
+    report.add_argument(
+        "--nuclei",
+        action="append",
+        default=[],
+        metavar="FILE",
+        help="nuclei JSONL (-jsonl) file; repeatable",
     )
     report.add_argument("--client", default="Redacted", help="client or system owner name")
     report.add_argument("--engagement", default="", help="engagement or ticket reference")
@@ -88,9 +97,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     report.add_argument(
         "--format",
-        choices=("md", "json"),
+        choices=("md", "json", "html", "docx"),
         default="md",
-        help="output format (default: md)",
+        help="output format: md, html, json or docx (default: md)",
     )
     report.add_argument(
         "--severity-min",
@@ -127,9 +136,11 @@ def _read_scope_file(path: str) -> list[str]:
 
 
 def _cmd_report(args: argparse.Namespace) -> int:
-    if not args.nmap and not args.httpx:
+    if not args.nmap and not args.httpx and not args.nuclei:
         print(
-            "{}: error: at least one --nmap or --httpx input is required".format(PROGRAM),
+            "{}: error: at least one --nmap, --httpx or --nuclei input is required".format(
+                PROGRAM
+            ),
             file=sys.stderr,
         )
         return EXIT_ERROR
@@ -152,6 +163,15 @@ def _cmd_report(args: argparse.Namespace) -> int:
         _log(args.quiet, "{}: {} endpoint(s) parsed".format(path, len(parsed)))
         web_targets.extend(parsed)
 
+    nuclei_findings = []
+    for path in args.nuclei:
+        if not Path(path).is_file():
+            print("{}: error: no such file: {}".format(PROGRAM, path), file=sys.stderr)
+            return EXIT_ERROR
+        parsed = parse_nuclei_jsonl(path)
+        _log(args.quiet, "{}: {} nuclei finding(s) parsed".format(path, len(parsed)))
+        nuclei_findings.extend(parsed)
+
     try:
         rules = load_rules(args.rules)
     except RuleError as exc:
@@ -164,7 +184,7 @@ def _cmd_report(args: argparse.Namespace) -> int:
         ),
     )
 
-    findings = run_checks(hosts, web_targets, rules=rules)
+    findings = sort_findings(run_checks(hosts, web_targets, rules=rules) + nuclei_findings)
     limit_index = SEVERITIES.index(args.severity_min)
     kept = [f for f in findings if SEVERITIES.index(f.severity) <= limit_index]
     dropped = len(findings) - len(kept)
@@ -192,12 +212,32 @@ def _cmd_report(args: argparse.Namespace) -> int:
         manual_review=manual_review_items(hosts, web_targets),
     )
 
-    rendered = render_json(report) if args.format == "json" else render_markdown(report)
-    if args.output == "-":
-        print(rendered)
-    else:
-        Path(args.output).write_text(rendered + "\n", encoding="utf-8")
+    if args.format == "docx":
+        if args.output == "-":
+            print(
+                "{}: error: --format docx requires -o FILE (binary output)".format(PROGRAM),
+                file=sys.stderr,
+            )
+            return EXIT_ERROR
+        try:
+            rendered = render_docx(report)
+        except RuntimeError as exc:
+            print("{}: error: {}".format(PROGRAM, exc), file=sys.stderr)
+            return EXIT_ERROR
+        Path(args.output).write_bytes(rendered)
         _log(args.quiet, "wrote {} ({} bytes)".format(args.output, len(rendered)))
+    else:
+        if args.format == "json":
+            rendered = render_json(report)
+        elif args.format == "html":
+            rendered = render_html(report)
+        else:
+            rendered = render_markdown(report)
+        if args.output == "-":
+            print(rendered)
+        else:
+            Path(args.output).write_text(rendered + "\n", encoding="utf-8")
+            _log(args.quiet, "wrote {} ({} bytes)".format(args.output, len(rendered)))
 
     counts = report.counts_by_severity()
     _log(

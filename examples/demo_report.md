@@ -3,24 +3,24 @@
 | | |
 |---|---|
 | **Client / owner** | Example Corp |
-| **Engagement** | Not specified |
-| **Tested by** | Not specified |
+| **Engagement** | ENG-2024-001 |
+| **Tested by** | A. Tester |
 | **Testing date** | 2026-10-05 |
-| **Report generated** | 2026-10-05 02:43 UTC |
+| **Report generated** | 2026-10-05 05:18 UTC |
 | **Generator** | reconkit 0.1.0 |
 
 ## 1. Executive summary
 
-12 finding(s) were raised across 3 host(s) and 6 HTTP endpoint(s). The highest severity observed is **CRITICAL**. Address critical and high findings first: they represent reachable paths to credential theft or remote code execution.
+16 finding(s) were raised across 3 host(s) and 6 HTTP endpoint(s). The highest severity observed is **CRITICAL**. Address critical and high findings first: they represent reachable paths to credential theft or remote code execution.
 
 | Severity | Count |
 |---|---|
-| Critical | 1 |
-| High | 7 |
-| Medium | 3 |
+| Critical | 2 |
+| High | 8 |
+| Medium | 4 |
 | Low | 1 |
-| Info | 0 |
-| **Total** | **12** |
+| Info | 1 |
+| **Total** | **16** |
 
 **Observed attack surface**
 
@@ -31,14 +31,15 @@
 **Priority items**
 
 1. `10.0.0.30:23` — Telnet service exposed (critical)
-2. `10.0.0.10:3306 (web01.lab.internal)` — MySQL/MariaDB reachable from the network (high)
-3. `10.0.0.20:21 (files01.lab.internal)` — FTP service exposed (high)
-4. `10.0.0.20:21 (files01.lab.internal)` — Anonymous FTP login permitted (high)
-5. `10.0.0.20:3389 (files01.lab.internal)` — Remote Desktop Protocol exposed (high)
+2. `app.example.com` — Apache Log4j RCE (Log4Shell) (critical)
+3. `10.0.0.10:3306 (web01.lab.internal)` — MySQL/MariaDB reachable from the network (high)
+4. `10.0.0.20:21 (files01.lab.internal)` — FTP service exposed (high)
+5. `10.0.0.20:21 (files01.lab.internal)` — Anonymous FTP login permitted (high)
 
 ## 2. Scope
 
 - `10.0.0.0/24`
+- `app.example.com`
 
 ## 3. Findings
 
@@ -70,7 +71,37 @@ Disable the Telnet service and replace it with SSH. If legacy equipment requires
 
 ---
 
-### 2. HIGH — MySQL/MariaDB reachable from the network
+### 2. CRITICAL — Apache Log4j RCE (Log4Shell)
+
+| | |
+|---|---|
+| **Check ID** | `cves/2021/CVE-2021-44228` |
+| **Severity** | Critical |
+| **Affected asset** | `app.example.com` |
+
+**Description**
+
+The application may be vulnerable to Log4Shell, a critical remote code execution vulnerability in Apache Log4j2 via JNDI lookups.
+
+**Evidence**
+
+```
+matcher: log4j-jndi; type: dns; extracted: 10.0.0.40
+```
+
+**Remediation**
+
+Upgrade Log4j to 2.17.1 or later and remove JNDI lookup classes.
+
+**References**
+
+- https://nvd.nist.gov/vuln/detail/CVE-2021-44228
+- CVE-2021-44228
+- CWE-502
+
+---
+
+### 3. HIGH — MySQL/MariaDB reachable from the network
 
 | | |
 |---|---|
@@ -98,7 +129,7 @@ Bind the database to localhost or the application subnet and enforce firewall ru
 
 ---
 
-### 3. HIGH — FTP service exposed
+### 4. HIGH — FTP service exposed
 
 | | |
 |---|---|
@@ -122,7 +153,7 @@ Replace FTP with SFTP or FTPS. If FTP must remain, enforce TLS and restrict sour
 
 ---
 
-### 4. HIGH — Anonymous FTP login permitted
+### 5. HIGH — Anonymous FTP login permitted
 
 | | |
 |---|---|
@@ -146,7 +177,7 @@ Disable anonymous access, or restrict it to a deliberately public directory with
 
 ---
 
-### 5. HIGH — Remote Desktop Protocol exposed
+### 6. HIGH — Remote Desktop Protocol exposed
 
 | | |
 |---|---|
@@ -174,7 +205,7 @@ Place RDP behind a VPN or a zero-trust gateway, enable Network Level Authenticat
 
 ---
 
-### 6. HIGH — SMB file sharing exposed
+### 7. HIGH — SMB file sharing exposed
 
 | | |
 |---|---|
@@ -202,7 +233,36 @@ Block SMB at the network perimeter, require SMB signing, disable SMBv1 and remov
 
 ---
 
-### 7. HIGH — Management interface reachable: Jenkins
+### 8. HIGH — Grafana panel exposed
+
+| | |
+|---|---|
+| **Check ID** | `exposed-panel-grafana` |
+| **Severity** | High |
+| **Affected asset** | `https://grafana.lab.internal/login` |
+
+**Description**
+
+A Grafana instance was identified. Unauthenticated or weakly authenticated Grafana can disclose dashboards and datasource credentials.
+
+**Evidence**
+
+```
+matcher: grafana-detect; type: http
+```
+
+**Remediation**
+
+Require authentication, restrict source networks and keep Grafana patched.
+
+**References**
+
+- https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/
+- CWE-200
+
+---
+
+### 9. HIGH — Management interface reachable: Jenkins
 
 | | |
 |---|---|
@@ -226,7 +286,7 @@ Place the interface behind authentication and a network access control list or V
 
 ---
 
-### 8. HIGH — Sensitive file or directory is reachable
+### 10. HIGH — Sensitive file or directory is reachable
 
 | | |
 |---|---|
@@ -254,7 +314,7 @@ Remove the file from the web root, deny access to dotfiles and backup extensions
 
 ---
 
-### 9. MEDIUM — SMB signing is enabled but not required
+### 11. MEDIUM — SMB signing is enabled but not required
 
 | | |
 |---|---|
@@ -282,7 +342,31 @@ Require SMB signing on servers and domain controllers via Group Policy, and disa
 
 ---
 
-### 10. MEDIUM — Management interface reachable: Grafana
+### 12. MEDIUM — Deprecated TLS protocol supported
+
+| | |
+|---|---|
+| **Check ID** | `weak-tls-v1-0` |
+| **Severity** | Medium |
+| **Affected asset** | `files01.lab.internal:443` |
+
+**Description**
+
+The server negotiates a deprecated TLS version, exposing connections to protocol-level downgrade attacks.
+
+**Evidence**
+
+```
+matcher: tls-version; type: ssl
+```
+
+**Remediation**
+
+Disable TLS 1.0 and 1.1; leave TLS 1.2 and 1.3 only.
+
+---
+
+### 13. MEDIUM — Management interface reachable: Grafana
 
 | | |
 |---|---|
@@ -306,7 +390,7 @@ Place the interface behind authentication and a network access control list or V
 
 ---
 
-### 11. MEDIUM — Non-production hostname is publicly reachable
+### 14. MEDIUM — Non-production hostname is publicly reachable
 
 | | |
 |---|---|
@@ -330,7 +414,7 @@ Restrict non-production hostnames to internal networks or a VPN/zero-trust gatew
 
 ---
 
-### 12. LOW — Content served over cleartext HTTP
+### 15. LOW — Content served over cleartext HTTP
 
 | | |
 |---|---|
@@ -351,6 +435,34 @@ scheme=http status=200
 **Remediation**
 
 Redirect all HTTP traffic to HTTPS and enable HSTS.
+
+---
+
+### 16. INFO — Missing security headers
+
+| | |
+|---|---|
+| **Check ID** | `http-missing-security-headers` |
+| **Severity** | Info |
+| **Affected asset** | `https://web01.lab.internal/` |
+
+**Description**
+
+The response is missing one or more common security headers, making the endpoint more exposed to clickjacking, MIME sniffing and other client-side attacks.
+
+**Evidence**
+
+```
+matcher: missing-headers; type: http; extracted: X-Frame-Options, X-Content-Type-Options
+```
+
+**Remediation**
+
+Add Content-Security-Policy, X-Frame-Options, X-Content-Type-Options and Referrer-Policy headers.
+
+**References**
+
+- https://owasp.org/www-project-secure-headers/
 
 
 ## 4. Asset inventory
@@ -403,6 +515,7 @@ by `reconkit`.
 
 * TCP port and service discovery: `nmap -sV -sC`
 * HTTP probing, fingerprinting and technology detection: `httpx -jsonl`
+* Template-based vulnerability detection: `nuclei -jsonl`
 
 **Analysis**
 

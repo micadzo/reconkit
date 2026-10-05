@@ -189,5 +189,53 @@ class CliTests(unittest.TestCase):
         self.assertIn("WEB-ADMIN-INTERFACE-EXPOSED", out)
 
 
+try:
+    import docx  # noqa: F401
+
+    HAS_DOCX = True
+except ImportError:
+    HAS_DOCX = False
+
+
+class NewFormatTests(unittest.TestCase):
+    def test_nuclei_input_merges_findings(self):
+        code, out, _ = run(
+            [
+                "report",
+                "--nuclei",
+                str(ROOT / "examples" / "sample_nuclei.jsonl"),
+                "--format",
+                "json",
+            ]
+        )
+        self.assertEqual(code, EXIT_OK)
+        payload = json.loads(out)
+        self.assertEqual(len(payload["findings"]), 4)
+        ids = {f["check_id"] for f in payload["findings"]}
+        self.assertIn("cves/2021/CVE-2021-44228", ids)
+
+    def test_html_format_to_stdout(self):
+        code, out, _ = run(["report", "--nmap", SAMPLE_NMAP, "--format", "html"])
+        self.assertEqual(code, EXIT_OK)
+        self.assertIn("<!DOCTYPE html>", out)
+        self.assertIn("Executive summary", out)
+
+    def test_docx_requires_output_file(self):
+        code, _, err = run(["report", "--nmap", SAMPLE_NMAP, "--format", "docx"])
+        self.assertEqual(code, EXIT_ERROR)
+        self.assertIn("requires -o", err)
+
+    @unittest.skipUnless(HAS_DOCX, "python-docx not installed")
+    def test_docx_writes_file(self):
+        with ScratchDir("docx-format") as tmp:
+            path = Path(tmp) / "report.docx"
+            code, _, _ = run(
+                ["report", "--nmap", SAMPLE_NMAP, "--format", "docx", "-o", str(path)]
+            )
+            self.assertEqual(code, EXIT_OK)
+            self.assertTrue(path.is_file())
+            self.assertEqual(path.read_bytes()[:2], b"PK")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -10,7 +10,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from reconkit.checks import manual_review_items, run_checks  # noqa: E402
 from reconkit.models import Finding, Report  # noqa: E402
 from reconkit.parsers import parse_httpx_jsonl, parse_nmap_xml  # noqa: E402
-from reconkit.render import md_escape, render_json, render_markdown  # noqa: E402
+from reconkit.render import (
+    html_escape,
+    md_escape,
+    render_docx,
+    render_html,
+    render_json,
+    render_markdown,
+)  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -93,6 +100,62 @@ class JsonRendererTests(unittest.TestCase):
         self.assertEqual(payload["summary"]["critical"], 1)
         self.assertEqual(len(payload["hosts"]), 3)
         self.assertIn("generator", payload)
+
+
+try:
+    import docx  # noqa: F401
+
+    HAS_DOCX = True
+except ImportError:
+    HAS_DOCX = False
+
+
+class HtmlRendererTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.html = render_html(build_report())
+
+    def test_html_document_structure(self):
+        self.assertIn("<!DOCTYPE html>", self.html)
+        self.assertIn("<title>", self.html)
+        self.assertIn("1. Executive summary", self.html)
+        self.assertIn("3. Findings", self.html)
+        self.assertIn("8. Disclaimer", self.html)
+
+    def test_severity_badge_rendered(self):
+        self.assertIn('class="sev sev-critical"', self.html)
+
+    def test_asset_appears(self):
+        self.assertIn("web01.lab.internal", self.html)
+
+    def test_html_escape(self):
+        self.assertEqual(html_escape('<a href="x">'), "&lt;a href=&quot;x&quot;&gt;")
+
+    def test_empty_report(self):
+        html = render_html(Report(client="Nobody"))
+        self.assertIn("No findings were raised", html)
+
+
+@unittest.skipUnless(HAS_DOCX, "python-docx not installed")
+class DocxRendererTests(unittest.TestCase):
+    def test_docx_is_a_valid_zip(self):
+        import io as _io
+        import zipfile
+
+        data = render_docx(build_report())
+        self.assertEqual(data[:2], b"PK")
+        with zipfile.ZipFile(_io.BytesIO(data)) as archive:
+            self.assertIn("word/document.xml", archive.namelist())
+
+    def test_docx_contains_report_text(self):
+        import io as _io
+        import zipfile
+
+        data = render_docx(build_report())
+        with zipfile.ZipFile(_io.BytesIO(data)) as archive:
+            xml = archive.read("word/document.xml").decode("utf-8")
+        self.assertIn("reconkit", xml)
+        self.assertIn("Example Corp", xml)
 
 
 if __name__ == "__main__":

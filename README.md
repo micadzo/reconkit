@@ -1,6 +1,6 @@
 # reconkit
 
-**Turn raw `nmap` and `httpx` output into a clean, client-ready penetration test report.**
+**Turn raw `nmap`, `httpx` and `nuclei` output into a clean, client-ready penetration test report.**
 
 [![CI](https://github.com/micadzo/reconkit/actions/workflows/ci.yml/badge.svg)](https://github.com/micadzo/reconkit/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
@@ -8,23 +8,28 @@
 [![Dependencies](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg)](#design-decisions)
 
 Every penetration test ends the same way: hours lost turning scan output into a document a client
-will actually read. `reconkit` does the mechanical part â€” parse, correlate, order by severity,
-render â€” so the tester can spend that time on the part that needs a human: validating findings and
+will actually read. `reconkit` does the mechanical part — parse, correlate, order by severity,
+render — so the tester can spend that time on the part that needs a human: validating findings and
 writing the narrative.
 
 ```console
-$ reconkit report --nmap scan.xml --httpx probe.jsonl \
+$ reconkit report --nmap scan.xml --httpx probe.jsonl --nuclei nuclei.jsonl \
     --client "Example Corp" --tester "A. Tester" \
     --scope 10.0.0.0/24 -o report.md
 
 [reconkit] scan.xml: 3 host(s) parsed
 [reconkit] probe.jsonl: 6 endpoint(s) parsed
+[reconkit] nuclei.jsonl: 4 nuclei finding(s) parsed
 [reconkit] loaded 25 port rule(s) from default.json
-[reconkit] wrote report.md (12982 bytes)
-[reconkit] findings: 1 critical, 7 high, 3 medium, 1 low, 0 info
+[reconkit] wrote report.md (15939 bytes)
+[reconkit] findings: 2 critical, 8 high, 4 medium, 1 low, 1 info
 ```
 
-See the output: [`examples/demo_report.md`](examples/demo_report.md).
+See the output in all three formats:
+
+- [`examples/demo_report.md`](examples/demo_report.md) — Markdown
+- [`examples/demo_report.html`](examples/demo_report.html) — HTML (self-contained, print-ready)
+- [`examples/demo_report.docx`](examples/demo_report.docx) — Word
 
 ---
 
@@ -41,28 +46,34 @@ check it against vendor advisories.
 
 ## Features
 
-- **Parses what you already have** â€” `nmap -oX` XML and `httpx -jsonl`, the two files almost every
-  external recon workflow produces.
+- **Parses what you already have** — `nmap -oX` XML, `httpx -jsonl` and `nuclei -jsonl`, the three
+  files almost every external recon workflow produces. Findings from all three merge into one report.
 - **25 data-driven port rules** covering cleartext legacy services, exposed databases, remote
   management interfaces and container APIs.
-- **8 NSE script checks** â€” anonymous FTP, open SMTP relay, unauthenticated VNC, SMB signing, and
+- **8 NSE script checks** — anonymous FTP, open SMTP relay, unauthenticated VNC, SMB signing, and
   MS17-010 / Heartbleed / Shellshock / SSLv3 from script output.
-- **Web surface checks** â€” exposed management interfaces (Jenkins, Grafana, phpMyAdmin, â€¦),
+- **Web surface checks** — exposed management interfaces (Jenkins, Grafana, phpMyAdmin, …),
   publicly reachable non-production hostnames, cleartext HTTP and sensitive paths such as `/.git/`.
-- **Extensible without code** â€” add a port rule by editing JSON. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
-- **`--fail-on SEVERITY`** â€” exit code `2` when a finding meets a threshold, so reconkit drops
+- **Four output formats** — Markdown, self-contained HTML, Word (`.docx`) and machine-readable JSON.
+- **Extensible without code** — add a port rule by editing JSON. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- **`--fail-on SEVERITY`** — exit code `2` when a finding meets a threshold, so reconkit drops
   straight into a CI pipeline.
-- **Markdown and JSON output** â€” human-readable report, machine-readable findings.
-- **Deterministic** â€” no network access, no timestamps in the findings, stable sort order.
+- **Deterministic** — no network access, no timestamps in the findings, stable sort order.
 
 ## Install
 
-`reconkit` has **zero runtime dependencies** and requires Python 3.9 or newer.
+`reconkit` has **zero required runtime dependencies** and needs Python 3.9 or newer.
 
 ```bash
 git clone https://github.com/micadzo/reconkit.git
 cd reconkit
 pip install -e .
+```
+
+DOCX export is opt-in and needs `python-docx`:
+
+```bash
+pip install -e ".[docx]"
 ```
 
 Or run it straight from the source tree without installing anything:
@@ -77,12 +88,13 @@ PYTHONPATH=src python -m reconkit report --nmap scan.xml
 
 ```bash
 # Markdown to stdout
-reconkit report --nmap scan.xml --httpx probe.jsonl
+reconkit report --nmap scan.xml --httpx probe.jsonl --nuclei nuclei.jsonl
 
 # Full engagement metadata, written to a file
 reconkit report \
   --nmap internal.xml --nmap dmz.xml \
   --httpx internal.jsonl \
+  --nuclei internal-nuclei.jsonl \
   --client "Example Corp" \
   --engagement "ENG-2024-001" \
   --tester "A. Tester" \
@@ -96,13 +108,23 @@ reconkit report \
 ```bash
 nmap -sV -sC -oX scan.xml 10.0.0.0/24
 httpx -l hosts.txt -jsonl -o probe.jsonl -title -tech-detect -status-code
+nuclei -l hosts.txt -jsonl -o nuclei.jsonl -severity low,medium,high,critical
 ```
+
+### Output formats
+
+```bash
+reconkit report --nmap scan.xml --httpx probe.jsonl --format html -o report.html
+reconkit report --nmap scan.xml --httpx probe.jsonl --format docx -o report.docx
+reconkit report --nmap scan.xml --httpx probe.jsonl --format json | jq '.summary'
+```
+
+`--format docx` writes binary output, so it requires `-o FILE` (not stdout).
 
 ### Other commands
 
 ```bash
 reconkit list-checks                  # print every built-in check
-reconkit report --nmap scan.xml --format json | jq '.summary'
 reconkit report --nmap scan.xml --severity-min high -o critical-only.md
 ```
 
@@ -124,9 +146,10 @@ reconkit report --nmap scan.xml --fail-on high -o report.md
 | Family | Count | Source |
 |---|---|---|
 | Port exposure rules | 25 | `src/reconkit/rules/default.json` |
-| nmap NSE script rules | 8 | `checks.py â†’ SCRIPT_RULES` |
-| Web surface rules | 4 | `checks.py â†’ _web_rule_findings` |
-| Version fingerprints (manual review) | â€” | collected from nmap and httpx |
+| nmap NSE script rules | 8 | `checks.py → SCRIPT_RULES` |
+| Web surface rules | 4 | `checks.py → _web_rule_findings` |
+| nuclei templates | — | mapped 1:1 from `info.severity` |
+| Version fingerprints (manual review) | — | collected from nmap and httpx |
 
 Run `reconkit list-checks` for the full list with severities.
 
@@ -152,13 +175,13 @@ reconkit report --nmap scan.xml --rules my-rules.json
 
 ## Design decisions
 
-**Zero runtime dependencies.** A security tool that a reviewer can audit in one sitting is worth
-more than a convenient one. Everything is standard library: `argparse`, `xml.etree`, `json`,
-`dataclasses`, `string.Template`. The test suite runs on `unittest` for the same reason.
+**Zero required runtime dependencies.** A security tool that a reviewer can audit in one sitting is
+worth more than a convenient one. The core is standard library only: `argparse`, `xml.etree`,
+`json`, `dataclasses`, `string.Template`. DOCX export is the single exception and is opt-in.
 
 **Rules as data, logic as code.** Anything that is a fact about a port belongs in JSON and can be
-changed without touching Python. Anything that requires interpreting output â€” NSE scripts, web
-fingerprints â€” stays in code, where it can be tested.
+changed without touching Python. Anything that requires interpreting output — NSE scripts, web
+fingerprints — stays in code, where it can be tested.
 
 **No CVE matching.** See above. Overclaiming is the fastest way to lose a client's trust.
 
@@ -169,19 +192,22 @@ timestamp, which makes reports diffable between engagement runs.
 
 ```
 reconkit/
-â”œâ”€â”€ src/reconkit/
-â”‚   â”œâ”€â”€ cli.py              # argument parsing, exit codes
-â”‚   â”œâ”€â”€ models.py           # Host, Port, WebTarget, Finding, Report
-â”‚   â”œâ”€â”€ checks.py           # check engine
-â”‚   â”œâ”€â”€ render.py           # Markdown and JSON renderers
-â”‚   â”œâ”€â”€ parsers/
-â”‚   â”‚   â”œâ”€â”€ nmap.py         # nmap -oX XML
-â”‚   â”‚   â””â”€â”€ httpx.py        # httpx -jsonl
-â”‚   â”œâ”€â”€ rules/default.json  # 25 port rules
-â”‚   â””â”€â”€ templates/report.md.tmpl
-â”œâ”€â”€ examples/               # synthetic sample input + demo output
-â”œâ”€â”€ tests/                  # 55 unit and end-to-end tests
-â””â”€â”€ .github/workflows/ci.yml
+├── src/reconkit/
+│   ├── cli.py              # argument parsing, exit codes
+│   ├── models.py           # Host, Port, WebTarget, Finding, Report
+│   ├── checks.py           # check engine
+│   ├── render.py           # Markdown, HTML, DOCX and JSON renderers
+│   ├── parsers/
+│   │   ├── nmap.py         # nmap -oX XML
+│   │   ├── httpx.py        # httpx -jsonl
+│   │   └── nuclei.py       # nuclei -jsonl
+│   ├── rules/default.json  # 25 port rules
+│   └── templates/
+│       ├── report.md.tmpl
+│       └── report.html.tmpl
+├── examples/               # synthetic sample input + demo output
+├── tests/                  # 73 unit and end-to-end tests
+└── .github/workflows/ci.yml
 ```
 
 ## Development
@@ -191,7 +217,7 @@ pip install -e ".[dev]"
 python -m unittest discover -s tests -v
 ```
 
-55 tests cover the parsers, the check engine, both renderers and the CLI end to end.
+73 tests cover the parsers, the check engine, all four renderers and the CLI end to end.
 
 ## Disclaimer
 
@@ -202,4 +228,4 @@ the owner's consent. Read [`DISCLAIMER.md`](DISCLAIMER.md) before your first run
 
 ## License
 
-MIT â€” see [`LICENSE`](LICENSE).
+MIT — see [`LICENSE`](LICENSE).

@@ -7,11 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- nuclei `-jsonl` parser (`--nuclei FILE`); findings merge with nmap and httpx results.
+- HTML export (`--format html`) — a self-contained, print-ready report.
+- DOCX export (`--format docx`) — opt-in via `pip install 'reconkit[docx]'`.
+
 ## [0.1.0] - 2024-05-01
 
 ### Added
 
-- `reconkit report` â€” build a Markdown or JSON report from nmap XML and httpx JSONL input.
+- `reconkit report` — build a Markdown or JSON report from nmap XML and httpx JSONL input.
 - 25 data-driven port rules in `src/reconkit/rules/default.json`, overridable with `--rules`.
 - 8 nmap NSE script checks, including anonymous FTP, SMB signing, MS17-010 and Heartbleed.
 - Web surface checks: exposed management interfaces, non-production hostnames, cleartext HTTP and
