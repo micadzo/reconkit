@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="370" viewBox="0 0 720 370" role="img" aria-label="reconkit — report">
+<title>reconkit — report</title>
+<rect x="0.5" y="0.5" width="719" height="369" rx="10" fill="#0d1117" stroke="#30363d"/>
+<path d="M0.5 10a10 10 0 0 1 10-10h719a10 10 0 0 1 10 10v26h-719z" fill="#161b22"/>
+<line x1="0.5" y1="36" x2="719.5" y2="36" stroke="#30363d"/>
+<circle cx="22" cy="18" r="6" fill="#ff5f56"/>
+<circle cx="42" cy="18" r="6" fill="#ffbd2e"/>
+<circle cx="62" cy="18" r="6" fill="#27c93f"/>
+<text x="360.0" y="22" fill="#8b949e" font-size="12" text-anchor="middle" font-family="SFMono-Regular, &quot;SF Mono&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace">reconkit — report</text>
+<text x="24.0" y="73.0" fill="#3fb950" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" font-weight="600" xml:space="preserve">$ </text>
+<text x="42.0" y="73.0" fill="#e6edf3" font-size="15" textLength="153.0" lengthAdjust="spacingAndGlyphs">reconkit report \</text>
+<text x="24.0" y="97.0" fill="#e6edf3" font-size="15" textLength="333.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    --nmap examples/sample_nmap.xml \</text>
+<text x="24.0" y="121.0" fill="#e6edf3" font-size="15" textLength="369.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    --httpx examples/sample_httpx.jsonl \</text>
+<text x="24.0" y="145.0" fill="#e6edf3" font-size="15" textLength="387.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    --nuclei examples/sample_nuclei.jsonl \</text>
+<text x="24.0" y="169.0" fill="#e6edf3" font-size="15" textLength="360.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    --client "Example Corp" -o report.md</text>
+<text x="24.0" y="217.0" fill="#8b949e" font-size="15" textLength="99.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">[reconkit] </text>
+<text x="123.0" y="217.0" fill="#58a6ff" font-size="15" textLength="378.0" lengthAdjust="spacingAndGlyphs">examples/sample_nmap.xml: 3 host(s) parsed</text>
+<text x="24.0" y="241.0" fill="#8b949e" font-size="15" textLength="99.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">[reconkit] </text>
+<text x="123.0" y="241.0" fill="#58a6ff" font-size="15" textLength="441.0" lengthAdjust="spacingAndGlyphs">examples/sample_httpx.jsonl: 6 endpoint(s) parsed</text>
+<text x="24.0" y="265.0" fill="#8b949e" font-size="15" textLength="99.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">[reconkit] </text>
+<text x="123.0" y="265.0" fill="#58a6ff" font-size="15" textLength="504.0" lengthAdjust="spacingAndGlyphs">examples/sample_nuclei.jsonl: 4 nuclei finding(s) parsed</text>
+<text x="24.0" y="289.0" fill="#8b949e" font-size="15" textLength="99.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">[reconkit] </text>
+<text x="123.0" y="289.0" fill="#8b949e" font-size="15" textLength="360.0" lengthAdjust="spacingAndGlyphs">loaded 25 port rule(s) from default.json</text>
+<text x="24.0" y="313.0" fill="#8b949e" font-size="15" textLength="99.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">[reconkit] </text>
+<text x="123.0" y="313.0" fill="#8b949e" font-size="15" textLength="261.0" lengthAdjust="spacingAndGlyphs">wrote report.md (15317 bytes)</text>
+<text x="24.0" y="337.0" fill="#8b949e" font-size="15" textLength="99.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">[reconkit] </text>
+<text x="123.0" y="337.0" fill="#e6edf3" font-size="15" textLength="90.0" lengthAdjust="spacingAndGlyphs" font-weight="600" xml:space="preserve">findings: </text>
+<text x="213.0" y="337.0" fill="#e6edf3" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" font-weight="600" xml:space="preserve">2 </text>
+<text x="231.0" y="337.0" fill="#f85149" font-size="15" textLength="72.0" lengthAdjust="spacingAndGlyphs" font-weight="600">critical</text>
+<text x="303.0" y="337.0" fill="#8b949e" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">, </text>
+<text x="321.0" y="337.0" fill="#e6edf3" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" font-weight="600" xml:space="preserve">8 </text>
+<text x="339.0" y="337.0" fill="#db6d28" font-size="15" textLength="36.0" lengthAdjust="spacingAndGlyphs" font-weight="600">high</text>
+<text x="375.0" y="337.0" fill="#8b949e" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">, </text>
+<text x="393.0" y="337.0" fill="#e6edf3" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" font-weight="600" xml:space="preserve">4 </text>
+<text x="411.0" y="337.0" fill="#d29922" font-size="15" textLength="54.0" lengthAdjust="spacingAndGlyphs" font-weight="600">medium</text>
+<text x="465.0" y="337.0" fill="#8b949e" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">, </text>
+<text x="483.0" y="337.0" fill="#e6edf3" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" font-weight="600" xml:space="preserve">1 </text>
+<text x="501.0" y="337.0" fill="#3fb950" font-size="15" textLength="27.0" lengthAdjust="spacingAndGlyphs" font-weight="600">low</text>
+<text x="528.0" y="337.0" fill="#8b949e" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">, </text>
+<text x="546.0" y="337.0" fill="#e6edf3" font-size="15" textLength="18.0" lengthAdjust="spacingAndGlyphs" font-weight="600" xml:space="preserve">1 </text>
+<text x="564.0" y="337.0" fill="#8b949e" font-size="15" textLength="36.0" lengthAdjust="spacingAndGlyphs" font-weight="600">info</text>
+</svg>

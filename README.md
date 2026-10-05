@@ -12,20 +12,9 @@ will actually read. `reconkit` does the mechanical part — parse, correlate, or
 render — so the tester can spend that time on the part that needs a human: validating findings and
 writing the narrative.
 
-```console
-$ reconkit report --nmap scan.xml --httpx probe.jsonl --nuclei nuclei.jsonl \
-    --client "Example Corp" --tester "A. Tester" \
-    --scope 10.0.0.0/24 -o report.md
+![reconkit turning an nmap, httpx and nuclei scan into a report](docs/demo.svg)
 
-[reconkit] scan.xml: 3 host(s) parsed
-[reconkit] probe.jsonl: 6 endpoint(s) parsed
-[reconkit] nuclei.jsonl: 4 nuclei finding(s) parsed
-[reconkit] loaded 25 port rule(s) from default.json
-[reconkit] wrote report.md (15939 bytes)
-[reconkit] findings: 2 critical, 8 high, 4 medium, 1 low, 1 info
-```
-
-See the output in all three formats:
+See the generated output in all three formats:
 
 - [`examples/demo_report.md`](examples/demo_report.md) — Markdown
 - [`examples/demo_report.html`](examples/demo_report.html) — HTML (self-contained, print-ready)
@@ -206,7 +195,9 @@ reconkit/
 │       ├── report.md.tmpl
 │       └── report.html.tmpl
 ├── examples/               # synthetic sample input + demo output
-├── tests/                  # 73 unit and end-to-end tests
+├── docs/demo.svg           # README hero image, generated from real output
+├── tools/make_demo_svg.py  # regenerates the hero image
+├── tests/                  # 77 unit and end-to-end tests
 └── .github/workflows/ci.yml
 ```
 
@@ -217,7 +208,16 @@ pip install -e ".[dev]"
 python -m unittest discover -s tests -v
 ```
 
-73 tests cover the parsers, the check engine, all four renderers and the CLI end to end.
+77 tests cover the parsers, the check engine, all four renderers and the CLI end to end.
+
+The hero image above is generated from real command output, so it cannot drift out of sync:
+
+```bash
+reconkit report --nmap examples/sample_nmap.xml --httpx examples/sample_httpx.jsonl \
+  --nuclei examples/sample_nuclei.jsonl -o report.md 2>&1 \
+  | grep '^\[reconkit\]' > /tmp/demo.txt
+python tools/make_demo_svg.py /tmp/demo.txt docs/demo.svg
+```
 
 ## Disclaimer
 
